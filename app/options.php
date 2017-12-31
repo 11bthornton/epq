@@ -10,4 +10,13 @@ class options extends Model
         'body', 'questionid'
     ];
     public $votes;
+    public $percentage;
+    public $MaleVotes;
+    public $FemaleVotes;
+    public $OtherVotes;
+    public $range1;
+    public $range2;
+    public $range3;
+    public $range4;
+    public $range5;
 }

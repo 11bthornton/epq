@@ -11,27 +11,23 @@ class create extends Controller
       public function __construct()
     {
         $this->middleware('auth');
+        //ENSURES USER HAS TO BE SIGNED IN
     }
     public function index() {
         //Returns Poll Creation View
         return view('create');
     }
     public function store(Request $request) {
-        //Handing form data
-        //We need to separate the request into data that goes into the separate
-        //tables. We do this by creating a new Questions and Options instance:
         $Question = new Questions;
-        //Because in the Options and Questions model files we began a fillable array
-        //I can now assign the relevant aspects of the request into the model instances.
+        //Create new instance of question
         $Question->body = $request->body;
-        //I don't need to do this for the auto-incrementing ID or the timestamps because
-        //they are automatically generated, but I do need to generate the key. For testing
-        //purposes I'm going to hardcode this in.
+        //Set question body to body from form
+        //FOLLOWING CODE GENERATES KEY
         $key = '';
-        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_';
+        $chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
         do {
             for($i=1;$i<6;$i++){
-            $random = rand(0,63);
+            $random = rand(0,35);
             $key .= $chars[$random];     
         }
         $record = Questions::where('key', '=', $key)->first();
@@ -39,6 +35,7 @@ class create extends Controller
         $Question->key = $key;
         $Question->uid = \Auth::user()->id;
         $Question->save();
+        //SAVES Key
         foreach($request->options as $choice) {
                 if(isset($choice)) {
                     $option = new Options;
@@ -47,7 +44,9 @@ class create extends Controller
                     $option->save();
                 }
             }
+        //Saving each option
             $redirect = '/poll/'.$key;
+        //redirect to the poll view
             return redirect($redirect);    
     } 
     public function load($id) {
@@ -73,7 +72,6 @@ class create extends Controller
         return view('poll', compact('poll', 'options'));
         }
         }
-
     }
     
     //handles the voting
@@ -98,15 +96,66 @@ class create extends Controller
             //pull up poll, options, votes
             $question = Questions::where('key', '=', $id)->get()->first();
             $options = Options::where('questionid', '=', $question->id)->get();
-            $total = 0;
+            $votes = Votes::where('questionid', '=', $question->id)->get();
+            //take all records from database for analysis
+            $total = $votes->count();
+            //Number of all votes cast on this poll
             foreach($options as $option) {
                 $votes = Votes::where([
                     ['questionid', '=', $question->id],
                     ['optionid', '=', $option->id],
-                ])->get()->count();
-                $option->votes = $votes;
-                $total = $total + $votes;
+                ])->get();
+                $option->votes = $votes->count();
+                $option->percentage = ($option->votes/$total)*100;
+                //DEMOGRAPHICAL ANALYSIS:
+                $option->MaleVotes = 0;
+                $option->FemaleVotes = 0;
+                $option->OtherVotes = 0;
+                $option->range1 = 0;
+                $option->range2 = 0;
+                $option->range3 = 0;
+                $option->range4 = 0;
+                $option->range5 = 0;
+                foreach($votes as $vote) {
+                    //get user using id
+                    $user = User::where('id', '=', $vote->userid)->get()->first();
+                    //should only be 1 user with id
+                    switch($user->gender) {
+                        case "Male":
+                            $option->MaleVotes = $option->MaleVotes + 1;
+                            break;
+                        case "Female":
+                            $option->FemaleVotes = $option->FemaleVotes + 1; 
+                            break;
+                        case "Other":
+                            $option->OtherVotes = $option->OtherVotes + 1; 
+                            break;
+                    }
+                 $today = date("Y-m-d");
+                 $diff = date_diff(date_create($user->dob), date_create($today));
+                 $age = $diff->format('%y');
+                 switch($age) {
+                    case ($age < 18):
+                         $option->range1 = $option->range1 + 1;
+                         break;
+                    case ($age >= 18 && $age < 30):
+                         $option->range2 = $option->range2 + 1;
+                         break;
+                    case ($age >= 30 && $age < 50):
+                         $option->range3 = $option->range3 + 1;
+                         break;
+                    case ($age >= 50 && $age < 65):
+                         $option->range4 = $option->range4 + 1;
+                         break;
+                    case ($age >= 65):
+                         $option->range5 = $option->range5 + 1;
+                         break;
+                         
+                 }
+                }
             }
+            //Counting up individual votes, calculating percentage as well for length of bar for
+            //visual indicator on screen
             return view('results', compact('question', 'options'));
         }
         

@@ -126,3 +126,9 @@ a.link {
     color: #fff;
     text-decoration: none;
 }
+.percentage {
+    background-color: #860036;
+    height: 30px;
+    color: white;
+    border-radius: 4px;
+}

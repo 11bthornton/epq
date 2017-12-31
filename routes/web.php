@@ -17,9 +17,14 @@ Route::get('/', function () {
 
 Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home');
+
+
 Route::get('/poll/create/', 'create@index');
 //Performs index function as specified in the create controller
+
 Route::post('/poll/create/', 'create@store');
+//Stores data from form into database
+
 Route::post('/poll/vote/', 'create@vote');
 Route::get('/poll/{id}/','create@load');
 Route::get('/poll/{id}/r','create@results');
