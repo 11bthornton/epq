@@ -51,4 +51,6 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
 
 # EPQ
-The website is written using the Laravel PHP framework (README above). The website is hosted at epqpoll.org(http://epqpoll.org) and will remain so until December 2018.
+The website is written using the Laravel PHP framework (README above). The website is hosted [here](http://epqpoll.org) and will remain so until December 2018.
+
+It is perhaps also worth noting here that many of the files in the repository are not written by myself since they come pre-packaged as part of the framework. 
